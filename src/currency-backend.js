@@ -11,6 +11,7 @@ const session = require('express-session')
 const connectRedis = require('connect-redis')
 const authenticationRoutes = require('./auth-routes')
 const frontendRoutes = require('./frontend-routes')
+const userServiceRoutes = require('./user-service-routes')
 const proxy = require('express-http-proxy')
 
 function createApp({
@@ -49,7 +50,13 @@ function createApp({
   if (!disableAuthentication) {
     authenticationRoutes(app, passport, userServiceAddress, onlyIfLoggedIn)
   }
+
   frontendRoutes(app, frontendAddress, onlyIfLoggedIn)
+
+  //show this to gil
+  userServiceRoutes(app, userServiceAddress, onlyIfLoggedInAjax)
+
+  app.get('/user-info', onlyIfLoggedIn, (req, res) => res.json({id: req.user.id}))
 
   app.get('/currencies', onlyIfLoggedInAjax, async (req, res) => {
     if (cachedSymbols) return res.json(cachedSymbols)
